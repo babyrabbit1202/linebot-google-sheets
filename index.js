@@ -54,6 +54,16 @@ async function appendToGoogleSheet(text, userId, timestamp) {
     const sheet = doc.sheetsByIndex[0];
     console.log('工作表標題:', sheet.title);
     
+    // 檢查並設置標題列
+    await sheet.loadHeaderRow();
+    if (sheet.headerValues.length === 0) {
+      console.log('第一行為空，正在設置標題列...');
+      await sheet.setHeaderRow(['時間', '用戶ID', '訊息內容']);
+      console.log('標題列已設置');
+    } else {
+      console.log('現有標題列:', sheet.headerValues);
+    }
+    
     await sheet.addRow({
       '時間': new Date(timestamp).toLocaleString('zh-TW'),
       '用戶ID': userId,
