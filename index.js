@@ -58,9 +58,7 @@ async function handleEvent(event) {
   return client.replyMessage(event.replyToken, replyMessage);
 }
 
-app.use(middleware(lineConfig));
-
-app.post('/webhook', (req, res) => {
+app.post('/webhook', middleware(lineConfig), (req, res) => {
   Promise
     .all(req.body.events.map(handleEvent))
     .then((result) => res.json(result))
