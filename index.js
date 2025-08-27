@@ -11,6 +11,13 @@ const lineConfig = {
   channelSecret: process.env.LINE_CHANNEL_SECRET,
 };
 
+console.log('Environment check:', {
+  hasToken: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
+  hasSecret: !!process.env.LINE_CHANNEL_SECRET,
+  tokenLength: process.env.LINE_CHANNEL_ACCESS_TOKEN?.length || 0,
+  secretLength: process.env.LINE_CHANNEL_SECRET?.length || 0
+});
+
 const client = new Client(lineConfig);
 
 async function appendToGoogleSheet(text, userId, timestamp) {
