@@ -37,14 +37,14 @@ async function appendToGoogleSheet(text, userId, timestamp) {
       );
       console.log('Service account email:', credentials.client_email);
       
-      // 使用新版本的驗證方法
+      // google-spreadsheet v3.x 穩定的驗證方法
       await doc.useServiceAccountAuth({
         client_email: credentials.client_email,
-        private_key: credentials.private_key,
+        private_key: credentials.private_key.replace(/\\n/g, '\n'),
       });
     } else {
       console.error('缺少 GOOGLE_SERVICE_ACCOUNT_KEY');
-      return;
+      throw new Error('缺少 GOOGLE_SERVICE_ACCOUNT_KEY');
     }
     
     console.log('正在載入文件資訊...');
@@ -61,12 +61,14 @@ async function appendToGoogleSheet(text, userId, timestamp) {
     });
     
     console.log('✅ 訊息已成功儲存到 Google Sheets');
+    return true;
   } catch (error) {
     console.error('❌ 儲存到 Google Sheets 時發生錯誤:', {
       message: error.message,
       code: error.code,
       stack: error.stack
     });
+    throw error;
   }
 }
 
@@ -79,14 +81,31 @@ async function handleEvent(event) {
   const userId = event.source.userId;
   const timestamp = event.timestamp;
 
-  await appendToGoogleSheet(text, userId, timestamp);
+  try {
+    await appendToGoogleSheet(text, userId, timestamp);
+    
+    const replyMessage = {
+      type: 'text',
+      text: `已儲存您的訊息到 Google Sheets：\n「${text}」`
+    };
 
-  const replyMessage = {
-    type: 'text',
-    text: `已儲存您的訊息到 Google Sheets：\n「${text}」`
-  };
+    return client.replyMessage(event.replyToken, replyMessage);
+  } catch (error) {
+    console.error('處理事件時發生錯誤:', error);
+    
+    // 特別處理 useServiceAccountAuth 錯誤
+    let errorText = `無法儲存訊息到 Google Sheets。您的訊息：\n「${text}」`;
+    if (error.message && error.message.includes('useServiceAccountAuth')) {
+      errorText = `Google Sheets 連接失敗 (useServiceAccountAuth 錯誤)。您的訊息：\n「${text}」`;
+    }
+    
+    const errorMessage = {
+      type: 'text',
+      text: errorText
+    };
 
-  return client.replyMessage(event.replyToken, replyMessage);
+    return client.replyMessage(event.replyToken, errorMessage);
+  }
 }
 
 app.post('/webhook', middleware(lineConfig), (req, res) => {
