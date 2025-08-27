@@ -60,15 +60,19 @@ async function appendToGoogleSheet(text, userId, timestamp) {
       console.log('第一行為空，正在設置標題列...');
       await sheet.setHeaderRow(['時間', '用戶ID', '訊息內容']);
       console.log('標題列已設置');
-    } else {
-      console.log('現有標題列:', sheet.headerValues);
+      // 重新載入標題列以確保正確設置
+      await sheet.loadHeaderRow();
     }
+    console.log('當前標題列:', sheet.headerValues);
     
-    await sheet.addRow({
+    const rowData = {
       '時間': new Date(timestamp).toLocaleString('zh-TW'),
       '用戶ID': userId,
       '訊息內容': text
-    });
+    };
+    console.log('準備插入的資料:', rowData);
+    
+    await sheet.addRow(rowData);
     
     console.log('✅ 訊息已成功儲存到 Google Sheets');
     return true;
