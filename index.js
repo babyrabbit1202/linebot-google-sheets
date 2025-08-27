@@ -36,7 +36,12 @@ async function appendToGoogleSheet(text, userId, timestamp) {
         Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_KEY, 'base64').toString()
       );
       console.log('Service account email:', credentials.client_email);
-      await doc.useServiceAccountAuth(credentials);
+      
+      // 使用新版本的驗證方法
+      await doc.useServiceAccountAuth({
+        client_email: credentials.client_email,
+        private_key: credentials.private_key,
+      });
     } else {
       console.error('缺少 GOOGLE_SERVICE_ACCOUNT_KEY');
       return;
