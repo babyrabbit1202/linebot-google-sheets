@@ -65,14 +65,18 @@ async function appendToGoogleSheet(text, userId, timestamp) {
     }
     console.log('當前標題列:', sheet.headerValues);
     
-    const rowData = {
-      '時間': new Date(timestamp).toLocaleString('zh-TW'),
-      '用戶ID': userId,
+    // 使用陣列方式插入資料，確保按順序對應到正確欄位
+    const timeString = new Date(timestamp).toLocaleString('zh-TW');
+    const rowValues = [timeString, userId, text];
+    console.log('準備插入的資料:', {
+      '時間': timeString,
+      '用戶ID': userId, 
       '訊息內容': text
-    };
-    console.log('準備插入的資料:', rowData);
+    });
+    console.log('陣列格式資料:', rowValues);
     
-    await sheet.addRow(rowData);
+    // 使用 addRow 陣列方式插入
+    await sheet.addRow(rowValues);
     
     console.log('✅ 訊息已成功儲存到 Google Sheets');
     return true;
