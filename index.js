@@ -17,11 +17,11 @@ async function appendToGoogleSheet(text, userId, timestamp) {
   try {
     const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID);
     
-    if (process.env.GOOGLE_PRIVATE_KEY && process.env.GOOGLE_CLIENT_EMAIL) {
-      await doc.useServiceAccountAuth({
-        client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-      });
+    if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+      const credentials = JSON.parse(
+        Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_KEY, 'base64').toString()
+      );
+      await doc.useServiceAccountAuth(credentials);
     }
     
     await doc.loadInfo();

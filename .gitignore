@@ -6,5 +6,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 credentials.json
+credentials-base64.txt
 *.key
 *.pem
